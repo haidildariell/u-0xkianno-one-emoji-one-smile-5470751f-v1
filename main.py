@@ -12,11 +12,30 @@ OUTPUT_DIR = "/output"
 OUTPUT_PATH = os.path.join(OUTPUT_DIR, "entry.txt")
 
 
-def main() -> None:
-    if not (1 <= len(EMOJI) <= 8):
+def validate_emoji(emoji: str) -> str:
+    """Check that `emoji` is exactly one emoji code point.
+
+    The competition gate requires an entry of 1-8 characters, so the
+    check keeps the character-length window and adds the byte-length
+    ceiling (a single emoji code point is at most 4 UTF-8 bytes, well
+    under 8), the single-code-point requirement, and a whitespace
+    rejection. Raises ValueError on any violation.
+    """
+    if len(emoji) != 1:
+        raise ValueError(
+            f"emoji must be exactly 1 code point, got {len(emoji)}"
+        )
+    if not 1 <= len(emoji) <= 8:
         raise ValueError("emoji must be 1-8 characters long")
-    if not EMOJI.strip():
+    if len(emoji.encode("utf-8")) > 8:
+        raise ValueError("emoji must be at most 8 UTF-8 bytes")
+    if not emoji.strip():
         raise ValueError("emoji must not be only whitespace")
+    return emoji
+
+
+def main() -> None:
+    validate_emoji(EMOJI)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
